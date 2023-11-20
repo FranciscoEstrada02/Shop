@@ -15,6 +15,7 @@
 	<description>Shop in spring</description>
 	<properties>
 		<java.version>21</java.version>
+		<spring-security.version>6.1.5</spring-security.version>
 	</properties>
 	<dependencies>
 		<dependency>

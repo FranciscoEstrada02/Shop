@@ -26,7 +26,7 @@ public class Reviews {
 
     @ManyToOne
     @JoinColumn(name = "users_id")
-    private Users users;
+    private User user;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

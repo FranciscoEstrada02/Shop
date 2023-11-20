@@ -1,39 +1,34 @@
 package com.example.shop.services;
 
-import com.example.shop.model.Users;
+import com.example.shop.model.User;
 import com.example.shop.repos.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
-public class UsersService {
+public class UsersService implements UserDetailsService {
+
+
     @Autowired
-    private UsersRepo usersRepo;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public Users registerUsers(Users users) {
-        if (existsUser(users.getName())) {
-            throw new NombreUsuarioExistenteException("El nombre de usuario ya está en uso.");
+    UsersRepo userRepo;
+    @Override
+    public UserDetails loadUserByUsername(String username)throws UsernameNotFoundException {
+        User user = userRepo.findByUsernameOrEmail(username, username);
+        if(user==null){
+            throw new UsernameNotFoundException("No existe");
         }
-        users.setPassword(passwordEncoder.encode(users.getPassword()));
 
-        return usersRepo.save(users);
-    }
-
-
-
-    private boolean existsUser(String name){
-        return  usersRepo.findByName(name) != null;
-    }
-
-    public class NombreUsuarioExistenteException extends RuntimeException {
-        public NombreUsuarioExistenteException(String mensaje) {
-            super(mensaje);
-        }
+        Set<GrantedAuthority> authorities = user.getRoles().stream()
+                .map((role) -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toSet());
+        return new org.springframework.security.core.userdetails.User(username,user.getPassword(),authorities);
     }
 }
